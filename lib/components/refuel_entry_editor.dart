@@ -36,7 +36,7 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
   int? _totalPrice;
   int? _odometer;
   bool _isFullTank = true;
-  double? _totalRefuelAmount; // 前回の満タン給油からの総給油量
+  double? _totalRefuelAmount; // 前回の満タン給油からの総給油量（今回を除く）
   bool _isRegisterInProgress = false;
 
   static String? _intFormValidator(String? input) {
@@ -125,11 +125,6 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
             'WHERE ${RefuelEntry.isFullTankFieldName} <> 0 '
             '${widget.refuelEntry == null ? '' : 'AND ${RefuelEntry.timestampFieldName} < ${widget.refuelEntry!.timestamp}'})',
       );
-      final totalRefuelAmountRes = await db.rawQuery('SELECT '
-          'SUM(${RefuelEntry.refuelAmountFieldName}) as total_refuel '
-          'FROM ${widget.vehicleName} '
-          'WHERE ${RefuelEntry.isFullTankFieldName} = 0 '
-          '${widget.refuelEntry == null ? '' : 'AND ${RefuelEntry.timestampFieldName} < ${widget.refuelEntry!.timestamp}'};');
 
       setState(() {
         if (prevRefuelRes.isNotEmpty) {
@@ -137,6 +132,16 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
         } else {
           _prevRefuelEntry = null;
         }
+      });
+
+      final totalRefuelAmountRes = await db.rawQuery('SELECT '
+          'SUM(${RefuelEntry.refuelAmountFieldName}) as total_refuel '
+          'FROM ${widget.vehicleName} '
+          'WHERE ${RefuelEntry.isFullTankFieldName} = 0 '
+          '${_prevRefuelEntry == null ? '' : 'AND ${RefuelEntry.timestampFieldName} > ${_prevRefuelEntry!.timestamp}'} '
+          '${widget.refuelEntry == null ? '' : 'AND ${RefuelEntry.timestampFieldName} < ${widget.refuelEntry!.timestamp}'};');
+
+      setState(() {
         _totalRefuelAmount = totalRefuelAmountRes[0]['total_refuel'] as double?;
       });
 
