@@ -5,6 +5,8 @@ import 'package:path/path.dart';
 import 'package:fuel_efficiency_record/models/refuel_entry.dart';
 import 'package:fuel_efficiency_record/constants.dart';
 
+import '../utils/int_validator.dart';
+
 class RefuelEntryEditor extends StatefulWidget {
   const RefuelEntryEditor({
     super.key,
@@ -39,16 +41,16 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
   double? _totalRefuelAmount; // 前回の満タン給油からの総給油量（今回を除く）
   bool _isRegisterInProgress = false;
 
-  static String? _intFormValidator(String? input) {
-    if (input == null || input.isEmpty) {
-      return null;
-    }
-
-    if (int.tryParse(input) == null) {
-      return '整数を入力してください';
-    }
-    return null;
-  }
+  // static String? _intFormValidator(String? input) {
+  //   if (input == null || input.isEmpty) {
+  //     return null;
+  //   }
+  //
+  //   if (int.tryParse(input) == null) {
+  //     return '整数を入力してください';
+  //   }
+  //   return null;
+  // }
 
   TableRow _buildStatsItem<T>(BuildContext context, Icon icon, String title,
           T value, String unit) =>
@@ -354,7 +356,7 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
                                     _totalPrice.toString();
                               }
                             },
-                            validator: _intFormValidator,
+                            validator: intFormValidator,
                           ),
                         ),
                       ],
@@ -373,7 +375,7 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
                         });
                         _intFormKey.currentState!.validate();
                       },
-                      validator: _intFormValidator,
+                      validator: intFormValidator,
                     ),
                     const SizedBox(height: 16.0),
                     TextFormField(
@@ -395,7 +397,7 @@ class _RefuelEntryEditorState extends State<RefuelEntryEditor> {
                           return null;
                         }
 
-                        final isInt = _intFormValidator(input);
+                        final isInt = intFormValidator(input);
                         if (isInt != null) {
                           return isInt;
                         }

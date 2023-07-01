@@ -40,7 +40,7 @@ class _RefuelHistoryPageState extends State<RefuelHistoryPage> {
   Future<int> _countRefuelEntries() async {
     _db ??= await _openDatabase();
     final res = await _db!.rawQuery(
-        'SELECT COUNT(*) AS count FROM ${widget.refuelHistoryArgs.vehicleName}');
+        'SELECT COUNT(*) AS count FROM ${widget.refuelHistoryArgs.vehicleName} WHERE ${RefuelEntry.refuelAmountFieldName} <> 0');
     return res[0]['count'] as int;
   }
 
@@ -117,20 +117,20 @@ class _RefuelHistoryPageState extends State<RefuelHistoryPage> {
           // ),
           PopupMenuButton(
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 0,
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(Icons.exit_to_app),
                     SizedBox(width: 8.0),
                     Text('給油履歴をエクスポート...'),
                   ],
                 ),
               ),
-              PopupMenuItem<int>(
+              const PopupMenuItem<int>(
                 value: 1,
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(
                       Icons.delete,
                       color: Colors.red,

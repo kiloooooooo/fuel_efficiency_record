@@ -47,21 +47,6 @@ class _DashboardPageState extends State<DashboardPage> {
     final db =
         await openDatabase(join(await getDatabasesPath(), refuelHistoryDBName));
 
-    try {
-      await db.rawQuery(
-          'SELECT * FROM ${widget.dashboardArgs.vehicleName} LIMIT 1;');
-    } on DatabaseException catch (_) {
-      await db.execute('CREATE TABLE '
-          '${widget.dashboardArgs.vehicleName}'
-          '(${RefuelEntry.timestampFieldName} INTEGER PRIMARY KEY,'
-          '${RefuelEntry.dateTimeFieldName} TEXT,'
-          '${RefuelEntry.refuelAmountFieldName} REAL,'
-          '${RefuelEntry.unitPriceFieldName} INTEGER,'
-          '${RefuelEntry.totalPriceFieldName} INTEGER,'
-          '${RefuelEntry.odometerFieldName} INTEGER,'
-          '${RefuelEntry.isFullTankFieldName} INTEGER)');
-    }
-
     final maxOdometerVal =
         await maxOdometer(db, widget.dashboardArgs.vehicleName);
     final minOdometerVal =
@@ -85,8 +70,12 @@ class _DashboardPageState extends State<DashboardPage> {
       _odometer = maxOdometerVal;
     });
 
-    final refuelHistoryRes = await db.query(widget.dashboardArgs.vehicleName,
-        limit: 5, orderBy: '${RefuelEntry.timestampFieldName} DESC');
+    final refuelHistoryRes = await db.query(
+      widget.dashboardArgs.vehicleName,
+      limit: 5,
+      orderBy: '${RefuelEntry.timestampFieldName} DESC',
+      where: '${RefuelEntry.refuelAmountFieldName} <> 0',
+    );
     final refuelHistory = refuelHistoryRes.map(RefuelEntry.fromMap);
     setState(() {
       _refuelHistory = refuelHistory.toList();
@@ -140,20 +129,20 @@ class _DashboardPageState extends State<DashboardPage> {
               //     ],
               //   ),
               // ),
-              PopupMenuItem<int>(
+              const PopupMenuItem<int>(
                 value: 1,
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(Icons.edit),
                     SizedBox(width: 8.0),
                     Text('車両名を編集'),
                   ],
                 ),
               ),
-              PopupMenuItem<int>(
+              const PopupMenuItem<int>(
                 value: 2,
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(Icons.delete, color: Colors.red),
                     SizedBox(width: 8.0),
                     Text('車両を削除', style: TextStyle(color: Colors.red)),
